@@ -3,25 +3,41 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Class } from '../entities/class.entity';
 import { Teacher } from '../entities/teacher.entity';
+import { Student } from '../entities/student.entity';
 
 @Injectable()
 export class ClassService {
   constructor(
     @InjectModel(Class.name) private classModel: Model<Class>,
-    @InjectModel('Teacher') private readonly teacherModel: Model<Teacher>,
+    @InjectModel(Teacher.name) private readonly teacherModel: Model<Teacher>,
+    @InjectModel(Student.name) private readonly studentModel: Model<Student>,
   ) {}
 
   async create(createClassDto: any): Promise<Class> {
+    // Step 1: Create the class
     const createdClass = new this.classModel(createClassDto);
-    return createdClass.save();
+    const savedClass = await createdClass.save();
+
+    // Step 2: Update the student entities with the new class ID
+    if (createClassDto.students && createClassDto.students.length > 0) {
+      await this.studentModel.updateMany(
+        { _id: { $in: createClassDto.students } }, // Match students by their IDs
+        { $set: { class: savedClass._id.toString() } }, // Set the `class` field to the new class ID
+      );
+    }
+
+    return savedClass;
   }
 
-  async findAll(): Promise<Class[]> {
+  findAll(): Promise<Class[]> {
     return this.classModel
       .find()
       .populate('teacher')
       .populate('students')
-      .exec();
+      .exec()
+      .then((classes) => {
+        return classes;
+      });
   }
 
   async findOne(id: string): Promise<Class> {
@@ -42,5 +58,19 @@ export class ClassService {
 
   async findAllTeacher(): Promise<Teacher[]> {
     return this.teacherModel.find().exec();
+  }
+
+  async findStudentsByClassId(classId: string): Promise<Student[]> {
+    return this.studentModel
+      .find({ class: classId }) // Match students where class matches the classId
+      .exec();
+  }
+
+  async findAllTeachers(): Promise<Teacher[]> {
+    return this.teacherModel.find().exec();
+  }
+
+  async findAllStudents(): Promise<Student[]> {
+    return this.studentModel.find().exec();
   }
 }

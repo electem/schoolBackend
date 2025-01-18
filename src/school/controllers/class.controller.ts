@@ -10,12 +10,23 @@ import {
 import { ClassService } from '../services/class.service';
 import { Class } from '../entities/class.entity';
 import { Teacher } from '../entities/teacher.entity';
+import { Student } from '../entities/student.entity';
 
 @Controller('class')
 export class ClassController {
   constructor(private readonly classService: ClassService) {}
 
-  @Post()
+  @Get('/getallteachers')
+  async getAllTeachers(): Promise<Teacher[]> {
+    return this.classService.findAllTeachers();
+  }
+
+  @Get('/getallStudents')
+  async getallStudents(): Promise<Student[]> {
+    return this.classService.findAllStudents();
+  }
+
+  @Post('/createClass')
   create(@Body() createClassDto: any): Promise<Class> {
     return this.classService.create(createClassDto);
   }
@@ -25,7 +36,7 @@ export class ClassController {
     return this.classService.findAll();
   }
 
-  @Get(':id')
+  @Get('/getClassById/:id')
   findOne(@Param('id') id: string): Promise<Class> {
     return this.classService.findOne(id);
   }
@@ -35,13 +46,13 @@ export class ClassController {
     return this.classService.update(id, updateClassDto);
   }
 
-  @Delete(':id')
+  @Delete('/deleteClass/:id')
   remove(@Param('id') id: string): Promise<any> {
     return this.classService.remove(id);
   }
 
-  @Get('/getallteacher')
-  async getAllTeachers(): Promise<Teacher[]> {
-    return this.classService.findAllTeacher();
+  @Get('geStudentbyClassId/:classId')
+  async getStudentsByClassId(@Param('classId') classId: string) {
+    return this.classService.findStudentsByClassId(classId);
   }
 }
