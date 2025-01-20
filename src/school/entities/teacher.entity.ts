@@ -15,7 +15,7 @@ export class Teacher extends Document {
   address: string;
 
   @Prop({ type: Types.ObjectId, ref: 'Class' })
-  class: Class; // One-to-One relationship with Class
+  class: Class | string; // One-to-One relationship with Class
 }
 
 export const TeacherSchema = SchemaFactory.createForClass(Teacher);

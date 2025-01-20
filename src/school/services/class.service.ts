@@ -25,6 +25,14 @@ export class ClassService {
         { $set: { class: savedClass._id.toString() } }, // Set the `class` field to the new class ID
       );
     }
+    // Step 3: Update the teacher entity with the new class ID
+    if (createClassDto.teacher) {
+      // Ensure that teacher is not an array (single teacher assignment)
+      await this.teacherModel.updateOne(
+        { _id: createClassDto.teacher }, // Match the teacher by their ID
+        { $set: { class: savedClass._id.toString() } }, // Set the `class` field in teacher to the new class ID
+      );
+    }
 
     return savedClass;
   }
